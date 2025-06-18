@@ -1,0 +1,87 @@
+{
+    "name": "thy_cadet_flutter_app",
+    "description": "Flutter-based THY Cadet Program app with gamified psychometric tests, AI feedback, and multi-airline support.",
+    "platform": "mobile",
+    "technologies": {
+        "framework": "Flutter",
+        "language": "Dart (null safety)",
+        "state_management": [
+            "Riverpod",
+            "Bloc"
+        ],
+        "backend": [
+            "Firebase Auth",
+            "Firestore",
+            "Storage"
+        ],
+        "ai_future": [
+            "OpenAI",
+            "Veo3",
+            "chatbot assistant"
+        ],
+        "testing": [
+            "flutter_test",
+            "mockito",
+            "integration_test"
+        ],
+        "architecture": [
+            "Clean Architecture",
+            "Feature-Based"
+        ],
+        "canvas_engine": "CustomPainter + GameEngine abstraction"
+    },
+    "screens": [
+        "/splash",
+        "/login",
+        "/signup",
+        "/home",
+        "/course/:id",
+        "/course/:id/psychometric",
+        "/course/:id/psychometric/attention",
+        "/result",
+        "/profile"
+    ],
+    "game_modules": [
+        "attention_test",
+        "memory_test",
+        "spatial_perception",
+        "psychomotor_coordination"
+    ],
+    "structure": {
+        "lib": {
+            "core": [
+                "theme",
+                "constants",
+                "helpers"
+            ],
+            "features": {
+                "auth": [
+                    "login",
+                    "signup"
+                ],
+                "courses": [
+                    "course_list",
+                    "course_detail"
+                ],
+                "games": [
+                    "attention",
+                    "memory",
+                    "spatial",
+                    "motor"
+                ],
+                "profile": [],
+                "result": []
+            },
+            "shared": [
+                "widgets",
+                "extensions",
+                "components"
+            ],
+            "services": [
+                "firebase_service",
+                "ai_service"
+            ],
+            "main.dart": "entry point"
+        }
+    }
+}

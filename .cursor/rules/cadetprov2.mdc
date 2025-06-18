@@ -1,0 +1,61 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 🧱 Project Rules for Flutter THY Cadet App
+
+## 🧰 Framework & Language
+- Use Flutter (latest stable version)
+- Use Dart with null safety enabled
+
+## 🎯 Architecture
+- Follow Clean Architecture (Domain, Data, Presentation layers)
+- Use Feature-Based folder structure:
+  /features, /core, /shared, /game_modules, /services
+
+## 🔌 State Management
+- Use Riverpod (preferred) or Bloc for scalable state control
+- Separate business logic into Providers or Cubits
+
+## 🎨 UI Design
+- Fully responsive layout using LayoutBuilder and MediaQuery
+- Custom animations with AnimatedBuilder or flutter_animate
+- Use CustomPaint and Canvas for psychometric game visuals
+
+## 🧠 Game Modules
+- Sürdürülebilir Dikkat Testi
+- Görsel-İşitsel Bellek
+- 3D Uzamsal Algı
+- Psikomotor Koordinasyon
+- Each game should use GameEngine class (with start/stop/reset/tick)
+- Results: time, success rate, reaction precision
+
+## 🔐 Auth & Backend
+- Firebase Auth for login/signup
+- Firebase Firestore for user progress & test data
+- Firebase Storage for videos/images
+- Optionally Supabase for open source backend
+
+## 🤖 AI Integration (Later Phase)
+- OpenAI ChatGPT for interview simulation
+- Veo3 prompt-based video generation
+- Assistant-like module for guidance
+
+## ✅ Code Quality
+- Apply SOLID principles
+- Use freezed, json_serializable for model handling
+- Use lints: very_good_analysis or pedantic
+- Unit & widget tests using flutter_test
+
+## 📲 App Screens
+- Splash / Intro
+- Login / Signup
+- Home (Course Overview)
+- Course Detail Page
+- Psychometric Test Launcher
+- Game Module Page (e.g., /attention)
+- Results / Stats
+- Profile
+
+- Admin Panel (future)
