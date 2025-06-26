@@ -30,6 +30,9 @@ dependencies:
   flutter_animate: ^4.5.0
   cached_network_image: ^3.3.0
   
+  # Audio & Animation
+  audioplayers: ^5.2.1
+  
   # Models & Serialization
   freezed_annotation: ^2.4.1
   json_annotation: ^4.8.1
@@ -73,6 +76,8 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/data/
+    - assets/audio/
+    - assets/animations/
   
   fonts:
     - family: Inter

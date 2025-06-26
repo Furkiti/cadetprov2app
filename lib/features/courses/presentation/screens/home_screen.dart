@@ -7,7 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:lottie/lottie.dart';
 import '../../../../shared/widgets/aviation_app_bar.dart';
-import '../../../../shared/widgets/parallax_hero_header.dart';
+import '../../../../shared/widgets/aviation_hero_dashboard.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/models/course_model.dart';
@@ -56,14 +56,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: CustomScrollView(
         controller: _scrollController,
         slivers: [
-          // Dynamic Hero Header with Parallax Effect
+          // Aviation Hero Dashboard with immersive cockpit experience
           SliverAppBar(
-            expandedHeight: 400,
+            expandedHeight: 450,
             floating: false,
             pinned: true,
             backgroundColor: AppTheme.thyRed,
             flexibleSpace: FlexibleSpaceBar(
-              background: ParallaxHeroHeader(
+              background: AviationHeroDashboard(
                 title: 'Havacılık Kariyerinizi Başlatın',
                 subtitle: 'THY, Pegasus, SunExpress ve diğer havayollarının cadet programlarına hazırlanın.',
                 ctaText: 'Kursları Keşfedin',
@@ -72,10 +72,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   // Navigate to courses or trigger course discovery
                   context.go('/home');
                 },
-                gradientColors: [AppTheme.thyRed, AppTheme.thyDarkRed],
-                backgroundPatternUrl: 'https://www.svgrepo.com/show/331760/radar.svg',
-                airplaneAnimationUrl: 'https://assets2.lottiefiles.com/packages/lf20_2znxgjyt.json',
-                showFloatingClouds: true,
+                userName: 'Furkan', // Mock user name
+                isUserLoggedIn: true, // Mock login state
               ),
             ),
             title: _buildAppBarTitle(),
