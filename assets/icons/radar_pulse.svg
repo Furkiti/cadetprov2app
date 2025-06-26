@@ -1,0 +1,31 @@
+<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Radar Circle -->
+  <circle cx="40" cy="40" r="35" fill="none" stroke="#00FF9D" stroke-width="1" opacity="0.6"/>
+  <circle cx="40" cy="40" r="25" fill="none" stroke="#00FF9D" stroke-width="0.5" opacity="0.4"/>
+  <circle cx="40" cy="40" r="15" fill="none" stroke="#00FF9D" stroke-width="0.5" opacity="0.3"/>
+  
+  <!-- Center Dot -->
+  <circle cx="40" cy="40" r="2" fill="#00FF9D" opacity="0.8"/>
+  
+  <!-- Radar Scan Lines -->
+  <g id="scan-lines">
+    <line x1="40" y1="40" x2="40" y2="5" stroke="#00FF9D" stroke-width="1" opacity="0.7"/>
+    <line x1="40" y1="40" x2="40" y2="5" stroke="#00FF9D" stroke-width="1" opacity="0.4" transform="rotate(45 40 40)"/>
+    <line x1="40" y1="40" x2="40" y2="5" stroke="#00FF9D" stroke-width="1" opacity="0.4" transform="rotate(90 40 40)"/>
+    <line x1="40" y1="40" x2="40" y2="5" stroke="#00FF9D" stroke-width="1" opacity="0.4" transform="rotate(135 40 40)"/>
+    <line x1="40" y1="40" x2="40" y2="5" stroke="#00FF9D" stroke-width="1" opacity="0.4" transform="rotate(180 40 40)"/>
+    <line x1="40" y1="40" x2="40" y2="5" stroke="#00FF9D" stroke-width="1" opacity="0.4" transform="rotate(225 40 40)"/>
+    <line x1="40" y1="40" x2="40" y2="5" stroke="#00FF9D" stroke-width="1" opacity="0.4" transform="rotate(270 40 40)"/>
+    <line x1="40" y1="40" x2="40" y2="5" stroke="#00FF9D" stroke-width="1" opacity="0.4" transform="rotate(315 40 40)"/>
+  </g>
+  
+  <!-- Pulse Rings -->
+  <circle cx="40" cy="40" r="5" fill="none" stroke="#00FF9D" stroke-width="1" opacity="0.3" id="pulse-1"/>
+  <circle cx="40" cy="40" r="15" fill="none" stroke="#00FF9D" stroke-width="1" opacity="0.2" id="pulse-2"/>
+  <circle cx="40" cy="40" r="25" fill="none" stroke="#00FF9D" stroke-width="1" opacity="0.1" id="pulse-3"/>
+  
+  <!-- Blip Points -->
+  <circle cx="55" cy="25" r="1.5" fill="#00FF9D" opacity="0.8" id="blip-1"/>
+  <circle cx="30" cy="50" r="1" fill="#00FF9D" opacity="0.6" id="blip-2"/>
+  <circle cx="45" cy="15" r="1.2" fill="#00FF9D" opacity="0.7" id="blip-3"/>
+</svg> 

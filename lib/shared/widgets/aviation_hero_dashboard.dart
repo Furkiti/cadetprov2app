@@ -7,7 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../core/theme/app_theme.dart';
 
-/// Aviation Hero Dashboard with immersive cockpit experience
+/// Immersive Aviation Hero Dashboard with Cockpit Experience
 class AviationHeroDashboard extends StatefulWidget {
   final String title;
   final String subtitle;
@@ -25,7 +25,7 @@ class AviationHeroDashboard extends StatefulWidget {
     required this.ctaText,
     this.onCTAPressed,
     required this.scrollOffset,
-    this.expandedHeight = 400,
+    this.expandedHeight = 450,
     this.userName,
     this.isUserLoggedIn = false,
   });
@@ -36,36 +36,41 @@ class AviationHeroDashboard extends StatefulWidget {
 
 class _AviationHeroDashboardState extends State<AviationHeroDashboard>
     with TickerProviderStateMixin {
-  late AnimationController _jetController;
+  late AnimationController _planeController;
   late AnimationController _contrailController;
   late AnimationController _hudController;
+  late AnimationController _radarController;
   late AudioPlayer _audioPlayer;
   
   bool _showContrail = false;
-  bool _isJetTapped = false;
-  double _jetRotation = 0.0;
+  bool _isPlaneTapped = false;
+  bool _hasPlayedWelcome = false;
+  double _planeRotation = 0.0;
   double _knotSpeed = 450.0;
+  double _altitude = 35000.0;
+  double _windSpeed = 25.0;
 
   @override
   void initState() {
     super.initState();
     _initializeControllers();
     _initializeAudio();
-    _startHUDAnimation();
+    _playWelcomeSound();
   }
 
   @override
   void dispose() {
-    _jetController.dispose();
+    _planeController.dispose();
     _contrailController.dispose();
     _hudController.dispose();
+    _radarController.dispose();
     _audioPlayer.dispose();
     super.dispose();
   }
 
   void _initializeControllers() {
-    _jetController = AnimationController(
-      duration: const Duration(seconds: 8),
+    _planeController = AnimationController(
+      duration: const Duration(seconds: 4),
       vsync: this,
     );
     
@@ -75,31 +80,46 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
     );
     
     _hudController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
+    
+    _radarController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    );
+    
+    // Start continuous animations
+    _hudController.repeat(reverse: true);
+    _radarController.repeat();
   }
 
   void _initializeAudio() {
     _audioPlayer = AudioPlayer();
   }
 
-  void _startHUDAnimation() {
-    _hudController.repeat(reverse: true);
+  void _playWelcomeSound() async {
+    if (!_hasPlayedWelcome) {
+      try {
+        await _audioPlayer.play(AssetSource('audio/cabin_chime.mp3'));
+        _hasPlayedWelcome = true;
+      } catch (e) {
+        debugPrint('Welcome audio not found: $e');
+      }
+    }
   }
 
-  void _onJetTap() async {
+  void _onPlaneTap() async {
     setState(() {
-      _isJetTapped = true;
+      _isPlaneTapped = true;
       _showContrail = true;
     });
 
-    // Play cockpit chime
+    // Play cockpit sound
     try {
       await _audioPlayer.play(AssetSource('audio/cabin_chime.mp3'));
     } catch (e) {
-      // Fallback if audio file doesn't exist
-      debugPrint('Audio file not found: $e');
+      debugPrint('Cockpit audio not found: $e');
     }
 
     // Start contrail animation
@@ -110,37 +130,52 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
       _contrailController.reset();
     });
 
-    // Reset jet tap state
+    // Reset plane tap state
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
-          _isJetTapped = false;
+          _isPlaneTapped = false;
         });
       }
     });
   }
 
+  void _onRadarTap() async {
+    // Play radar ping sound
+    try {
+      await _audioPlayer.play(AssetSource('audio/radar_ping.mp3'));
+    } catch (e) {
+      debugPrint('Radar ping audio not found: $e');
+    }
+
+    // Trigger special radar pulse effect
+    _radarController.stop();
+    _radarController.forward().then((_) {
+      _radarController.repeat();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Calculate jet rotation based on scroll
-    _jetRotation = (widget.scrollOffset * 0.02).clamp(-10.0, 10.0);
+    // Calculate plane rotation based on scroll (aileron motion)
+    _planeRotation = (widget.scrollOffset * 0.001).clamp(-15.0, 15.0);
     
     return Stack(
       children: [
-        // Aviation Sky Background Layer
+        // Aviation Sky Background with Gradient
         _buildAviationBackground(),
         
-        // HUD Overlay (Cockpit Interface)
-        _buildHUDOverlay(),
+        // HUD Grid Overlay
+        _buildHUDGrid(),
         
-        // Animated Jet Layer
-        _buildAnimatedJet(),
+        // Radar Pulse Effect (moved down)
+        _buildRadarPulseEffect(),
+        
+        // Animated Plane with Aileron Motion
+        _buildAnimatedPlane(),
         
         // Contrail Effect
         if (_showContrail) _buildContrailEffect(),
-        
-        // Dynamic Greeting
-        if (widget.isUserLoggedIn) _buildDynamicGreeting(),
         
         // Hero Content
         _buildHeroContent(),
@@ -151,120 +186,245 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
   /// Builds the aviation sky background with gradient overlay
   Widget _buildAviationBackground() {
     return Positioned.fill(
-      child: ShaderMask(
-        shaderCallback: (bounds) {
-          return LinearGradient(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppTheme.thyRed.withOpacity(0.8),
-              const Color(0xFF0C2340).withOpacity(0.9),
-              const Color(0xFF1a1a2e).withOpacity(0.95),
+              const Color(0xFFE30613), // THY Red
+              const Color(0xFF0C2340), // Navy Blue
+              const Color(0xFF1a1a2e), // Deep Navy
             ],
-          ).createShader(bounds);
-        },
-        blendMode: BlendMode.overlay,
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppTheme.thyRed,
-                const Color(0xFF0C2340),
-                const Color(0xFF1a1a2e),
-              ],
-            ),
           ),
-          child: Stack(
-            children: [
-              // Sky pattern overlay
-              Positioned.fill(
-                child: Opacity(
-                  opacity: 0.1,
-                  child: CustomPaint(
-                    painter: SkyPatternPainter(),
-                  ),
+        ),
+        child: Stack(
+          children: [
+            // Sky pattern overlay
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.1,
+                child: CustomPaint(
+                  painter: SkyPatternPainter(),
                 ),
               ),
-            ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Builds the HUD grid overlay for cockpit atmosphere
+  Widget _buildHUDGrid() {
+    return Positioned.fill(
+      child: Opacity(
+        opacity: 0.05,
+        child: CustomPaint(
+          painter: HUDGridPainter(),
+        ),
+      ),
+    );
+  }
+
+  /// Radar pulse effect moved down
+  Widget _buildRadarPulseEffect() {
+    return Positioned(
+      top: 60,
+      right: 20,
+      child: Tooltip(
+        message: 'ATC Radar - Tap for ping',
+        preferBelow: true,
+        child: GestureDetector(
+          onTap: _onRadarTap,
+          child: AnimatedBuilder(
+            animation: _radarController,
+            builder: (context, child) {
+              // React to scroll for more dynamic radar
+              final scrollReaction = (widget.scrollOffset * 0.01).clamp(0.0, 0.3);
+              
+              return Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.black.withOpacity(0.2),
+                  border: Border.all(
+                    color: const Color(0xFF00FF9D).withOpacity(0.4 + scrollReaction),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00FF9D).withOpacity(0.2 + scrollReaction),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  children: [
+                    // Radar circles
+                    Center(
+                      child: Container(
+                        width: 70,
+                        height: 70,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF00FF9D).withOpacity(0.3),
+                            width: 0.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF00FF9D).withOpacity(0.2),
+                            width: 0.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF00FF9D).withOpacity(0.15),
+                            width: 0.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                    
+                    // Center dot
+                    Center(
+                      child: Container(
+                        width: 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFF00FF9D).withOpacity(0.8),
+                        ),
+                      ),
+                    ),
+                    
+                    // Rotating scan arm
+                    Center(
+                      child: Transform.rotate(
+                        angle: _radarController.value * 2 * math.pi,
+                        child: Container(
+                          width: 2,
+                          height: 35,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                const Color(0xFF00FF9D).withOpacity(0.8),
+                                const Color(0xFF00FF9D).withOpacity(0.3),
+                                Colors.transparent,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(1),
+                          ),
+                        ),
+                      ),
+                    ),
+                    
+                    // Pulse rings
+                    ...List.generate(3, (index) {
+                      final pulseValue = (_radarController.value + (index * 0.33)) % 1.0;
+                      final scale = 0.3 + (pulseValue * 0.7);
+                      final opacity = (1.0 - pulseValue) * 0.4;
+                      
+                      return Center(
+                        child: Transform.scale(
+                          scale: scale,
+                          child: Container(
+                            width: 70,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFF00FF9D).withOpacity(opacity),
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                    
+                    // Blip points with pulsing animation
+                    ...List.generate(3, (index) {
+                      final blipValue = (_radarController.value + (index * 0.4)) % 1.0;
+                      final opacity = 0.3 + (blipValue * 0.7);
+                      final scale = 0.8 + (blipValue * 0.4);
+                      
+                      final positions = [
+                        const Offset(15, -10),
+                        const Offset(-8, 12),
+                        const Offset(10, -20),
+                      ];
+                      
+                      return Positioned(
+                        left: 40 + positions[index].dx,
+                        top: 40 + positions[index].dy,
+                        child: Transform.scale(
+                          scale: scale,
+                          child: Container(
+                            width: 3,
+                            height: 3,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFF00FF9D).withOpacity(opacity),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF00FF9D).withOpacity(opacity * 0.5),
+                                  blurRadius: 4,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),
     );
   }
 
-  /// Builds the HUD (Heads Up Display) overlay
-  Widget _buildHUDOverlay() {
+  /// Builds the animated plane with aileron motion
+  Widget _buildAnimatedPlane() {
     return Positioned(
-      top: 60,
-      left: 20,
-      child: AnimatedBuilder(
-        animation: _hudController,
-        builder: (context, child) {
-          return Opacity(
-            opacity: 0.7 + (_hudController.value * 0.3),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: const Color(0xFF7CFC00).withOpacity(0.6),
-                  width: 1,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "KNOT SPEED: ${_knotSpeed.toStringAsFixed(0)}",
-                    style: GoogleFonts.orbitron(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF7CFC00),
-                      shadows: [
-                        Shadow(
-                          blurRadius: 3,
-                          color: const Color(0xFF7CFC00).withOpacity(0.8),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "ALTITUDE: 35,000 FT",
-                    style: GoogleFonts.orbitron(
-                      fontSize: 10,
-                      color: const Color(0xFF7CFC00).withOpacity(0.8),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  /// Builds the animated jet with scroll-based rotation
-  Widget _buildAnimatedJet() {
-    return Positioned(
-      top: 80,
-      right: -30,
+      top: 100,
+      right: -40,
       child: Transform.translate(
         offset: Offset(widget.scrollOffset * 0.3, 0),
         child: Transform.rotate(
-          angle: _jetRotation * math.pi / 180,
+          angle: _planeRotation * math.pi / 180,
           child: GestureDetector(
-            onTap: _onJetTap,
+            onTap: _onPlaneTap,
             child: AnimatedScale(
-              scale: _isJetTapped ? 1.1 : 1.0,
+              scale: _isPlaneTapped ? 1.15 : 1.0,
               duration: const Duration(milliseconds: 200),
-              child: SizedBox(
-                width: 120,
-                height: 80,
+              child: Container(
+                width: 140,
+                height: 100,
                 child: Lottie.asset(
                   'assets/animations/plane_fly.json',
                   fit: BoxFit.contain,
@@ -274,8 +434,8 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
                     // Fallback to custom airplane icon
                     return Icon(
                       Icons.flight,
-                      size: 60,
-                      color: Colors.white.withOpacity(0.8),
+                      size: 80,
+                      color: Colors.white.withOpacity(0.9),
                     );
                   },
                 ),
@@ -287,59 +447,37 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
     );
   }
 
-  /// Builds the contrail effect when jet is tapped
+  /// Builds the contrail effect when plane is tapped
   Widget _buildContrailEffect() {
     return Positioned(
-      top: 110,
-      right: 60,
+      top: 140,
+      right: 80,
       child: AnimatedBuilder(
         animation: _contrailController,
         builder: (context, child) {
           return Opacity(
             opacity: (1.0 - _contrailController.value),
             child: Transform.translate(
-              offset: Offset(-_contrailController.value * 100, 0),
+              offset: Offset(-_contrailController.value * 120, 0),
               child: Container(
-                width: 80,
-                height: 2,
+                width: 100,
+                height: 3,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Colors.white.withOpacity(0.8),
-                      Colors.white.withOpacity(0.3),
+                      Colors.white.withOpacity(0.9),
+                      Colors.white.withOpacity(0.5),
+                      Colors.white.withOpacity(0.2),
                       Colors.transparent,
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(1),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
           );
         },
       ),
-    );
-  }
-
-  /// Builds the dynamic greeting for logged-in users
-  Widget _buildDynamicGreeting() {
-    return Positioned(
-      top: 120,
-      left: 20,
-      child: Text(
-        "Kaptan Hoş Geldiniz, ${widget.userName ?? 'Pilot'}",
-        style: GoogleFonts.barlow(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
-          shadows: [
-            Shadow(
-              offset: const Offset(0, 1),
-              blurRadius: 2,
-              color: Colors.black.withOpacity(0.5),
-            ),
-          ],
-        ),
-      ).animate().fadeIn(duration: 700.ms),
     );
   }
 
@@ -357,39 +495,41 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
             // Main Title with Aviation Styling
             Text(
               widget.title,
-              style: GoogleFonts.barlow(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+              style: GoogleFonts.barlowCondensed(
+                fontSize: 32,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFFF4F5F7),
+                letterSpacing: 1.5,
                 shadows: [
                   Shadow(
-                    offset: const Offset(0, 2),
-                    blurRadius: 4,
-                    color: Colors.black.withOpacity(0.5),
+                    offset: const Offset(0, 3),
+                    blurRadius: 6,
+                    color: Colors.black.withOpacity(0.6),
                   ),
                 ],
               ),
-            ).animate().fadeIn(duration: 800.ms).slideX(begin: -0.3),
+            ).animate().fadeIn(duration: 1000.ms).slideX(begin: -0.4),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             
             // Subtitle
             Text(
               widget.subtitle,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.manrope(
                 fontSize: 16,
-                color: Colors.white.withOpacity(0.9),
+                color: const Color(0xFFF4F5F7).withOpacity(0.9),
+                height: 1.4,
                 shadows: [
                   Shadow(
                     offset: const Offset(0, 1),
-                    blurRadius: 2,
-                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 3,
+                    color: Colors.black.withOpacity(0.4),
                   ),
                 ],
               ),
-            ).animate().fadeIn(delay: 200.ms, duration: 800.ms).slideX(begin: -0.2),
+            ).animate().fadeIn(delay: 300.ms, duration: 1000.ms).slideX(begin: -0.3),
             
-            const SizedBox(height: 32),
+            const SizedBox(height: 40),
             
             // Animated CTA Button
             _buildAnimatedCTAButton(),
@@ -407,7 +547,7 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
     
     return Animate(
       effects: [
-        FadeEffect(duration: 800.ms),
+        FadeEffect(duration: 1000.ms),
         ScaleEffect(
           begin: const Offset(0.8, 0.8),
           end: const Offset(1.0, 1.0),
@@ -415,20 +555,20 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
         ),
       ],
       child: Transform.scale(
-        scale: isMidScreen ? 1.05 : 1.0,
+        scale: isMidScreen ? 1.08 : 1.0,
         child: ElevatedButton(
           onPressed: widget.onCTAPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFFFFB800), // Jet Yellow
             foregroundColor: const Color(0xFF0C2340), // Navy Blue
             padding: const EdgeInsets.symmetric(
-              horizontal: 32,
-              vertical: 16,
+              horizontal: 36,
+              vertical: 18,
             ),
-            elevation: isMidScreen ? 8 : 4,
-            shadowColor: const Color(0xFFFFB800).withOpacity(0.4),
+            elevation: isMidScreen ? 12 : 6,
+            shadowColor: const Color(0xFFFFB800).withOpacity(0.5),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
             ),
           ),
           child: Row(
@@ -436,15 +576,16 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
             children: [
               Text(
                 widget.ctaText,
-                style: GoogleFonts.barlow(
-                  fontSize: 16,
+                style: GoogleFonts.barlowCondensed(
+                  fontSize: 18,
                   fontWeight: FontWeight.w700,
+                  letterSpacing: 1.0,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Icon(
                 Icons.flight_takeoff,
-                size: 18,
+                size: 20,
               ),
             ],
           ),
@@ -452,9 +593,9 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
       ).animate(
         onPlay: (controller) => controller.repeat(),
       ).shimmer(
-        duration: 3.seconds,
-        color: Colors.white.withOpacity(0.3),
-        size: 2.0,
+        duration: 4.seconds,
+        color: Colors.white.withOpacity(0.4),
+        size: 3.0,
       ),
     );
   }
@@ -465,14 +606,38 @@ class SkyPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.1)
+      ..color = Colors.white.withOpacity(0.08)
       ..strokeWidth = 1;
 
     // Draw cloud-like patterns
-    for (int i = 0; i < 20; i++) {
-      final x = (i * 50) % size.width;
-      final y = (i * 30) % size.height;
-      canvas.drawCircle(Offset(x, y), 20 + (i % 3) * 10, paint);
+    for (int i = 0; i < 25; i++) {
+      final x = (i * 60) % size.width;
+      final y = (i * 40) % size.height;
+      canvas.drawCircle(Offset(x, y), 25 + (i % 4) * 8, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Custom painter for HUD grid overlay
+class HUDGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF7CFC00).withOpacity(0.1)
+      ..strokeWidth = 0.5;
+
+    // Draw grid lines
+    for (int i = 0; i <= 10; i++) {
+      final x = (size.width / 10) * i;
+      final y = (size.height / 10) * i;
+      
+      // Vertical lines
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+      // Horizontal lines
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
   }
 
