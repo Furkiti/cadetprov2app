@@ -165,17 +165,31 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
         // Aviation Sky Background with Gradient
         _buildAviationBackground(),
         
+        // Silhouette Background Image (more visible)
+        Positioned.fill(
+          child: Opacity(
+            opacity: 0.18,
+            child: ColorFiltered(
+              colorFilter: ColorFilter.mode(
+                Colors.blueGrey.shade900.withOpacity(0.35),
+                BlendMode.darken,
+              ),
+              child: Image.asset(
+                'assets/images/cadet_background.png',
+                fit: BoxFit.cover,
+                alignment: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+        ),
         // HUD Grid Overlay
         _buildHUDGrid(),
         
         // Radar Pulse Effect (moved down)
         _buildRadarPulseEffect(),
         
-        // Animated Plane with Aileron Motion
-        _buildAnimatedPlane(),
-        
-        // Contrail Effect
-        if (_showContrail) _buildContrailEffect(),
+        // Bottom-right airplane animation
+        _buildBottomRightPlane(),
         
         // Hero Content
         _buildHeroContent(),
@@ -227,11 +241,11 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
     );
   }
 
-  /// Radar pulse effect moved down
+  /// Builds the radar pulse effect with rotating scan arm
   Widget _buildRadarPulseEffect() {
     return Positioned(
-      top: 60,
-      right: 20,
+      top: 40,
+      right: 25,
       child: Tooltip(
         message: 'ATC Radar - Tap for ping',
         preferBelow: true,
@@ -244,8 +258,8 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
               final scrollReaction = (widget.scrollOffset * 0.01).clamp(0.0, 0.3);
               
               return Container(
-                width: 80,
-                height: 80,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.black.withOpacity(0.2),
@@ -266,8 +280,8 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
                     // Radar circles
                     Center(
                       child: Container(
-                        width: 70,
-                        height: 70,
+                        width: 52,
+                        height: 52,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
@@ -279,8 +293,8 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
                     ),
                     Center(
                       child: Container(
-                        width: 50,
-                        height: 50,
+                        width: 36,
+                        height: 36,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
@@ -292,8 +306,8 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
                     ),
                     Center(
                       child: Container(
-                        width: 30,
-                        height: 30,
+                        width: 20,
+                        height: 20,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
@@ -307,8 +321,8 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
                     // Center dot
                     Center(
                       child: Container(
-                        width: 4,
-                        height: 4,
+                        width: 3,
+                        height: 3,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: const Color(0xFF00FF9D).withOpacity(0.8),
@@ -321,8 +335,8 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
                       child: Transform.rotate(
                         angle: _radarController.value * 2 * math.pi,
                         child: Container(
-                          width: 2,
-                          height: 35,
+                          width: 1.5,
+                          height: 26,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               begin: Alignment.topCenter,
@@ -349,8 +363,8 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
                         child: Transform.scale(
                           scale: scale,
                           child: Container(
-                            width: 70,
-                            height: 70,
+                            width: 52,
+                            height: 52,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
@@ -370,26 +384,26 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
                       final scale = 0.8 + (blipValue * 0.4);
                       
                       final positions = [
-                        const Offset(15, -10),
-                        const Offset(-8, 12),
-                        const Offset(10, -20),
+                        const Offset(10, -7),
+                        const Offset(-6, 8),
+                        const Offset(7, -14),
                       ];
                       
                       return Positioned(
-                        left: 40 + positions[index].dx,
-                        top: 40 + positions[index].dy,
+                        left: 30 + positions[index].dx,
+                        top: 30 + positions[index].dy,
                         child: Transform.scale(
                           scale: scale,
                           child: Container(
-                            width: 3,
-                            height: 3,
+                            width: 2,
+                            height: 2,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: const Color(0xFF00FF9D).withOpacity(opacity),
                               boxShadow: [
                                 BoxShadow(
                                   color: const Color(0xFF00FF9D).withOpacity(opacity * 0.5),
-                                  blurRadius: 4,
+                                  blurRadius: 3,
                                   spreadRadius: 1,
                                 ),
                               ],
@@ -408,75 +422,80 @@ class _AviationHeroDashboardState extends State<AviationHeroDashboard>
     );
   }
 
-  /// Builds the animated plane with aileron motion
-  Widget _buildAnimatedPlane() {
+  /// Builds the animated plane in the bottom-right with idle motion and interaction
+  Widget _buildBottomRightPlane() {
     return Positioned(
-      top: 100,
+      bottom: 20,
       right: -40,
-      child: Transform.translate(
-        offset: Offset(widget.scrollOffset * 0.3, 0),
-        child: Transform.rotate(
-          angle: _planeRotation * math.pi / 180,
-          child: GestureDetector(
-            onTap: _onPlaneTap,
-            child: AnimatedScale(
-              scale: _isPlaneTapped ? 1.15 : 1.0,
-              duration: const Duration(milliseconds: 200),
-              child: Container(
-                width: 140,
-                height: 100,
-                child: Lottie.asset(
-                  'assets/animations/plane_fly.json',
-                  fit: BoxFit.contain,
-                  repeat: true,
-                  animate: true,
-                  errorBuilder: (context, error, stackTrace) {
-                    // Fallback to custom airplane icon
-                    return Icon(
-                      Icons.flight,
-                      size: 80,
-                      color: Colors.white.withOpacity(0.9),
+      child: GestureDetector(
+        onTap: _onPlaneTap,
+        child: Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            // Plane animation
+            AnimatedBuilder(
+              animation: _planeController,
+              builder: (context, child) {
+                final idleOffset = math.sin(_planeController.value * 2 * math.pi) * 14;
+                final tilt = math.sin(_planeController.value * 2 * math.pi) * 0.09;
+                return Transform.translate(
+                  offset: Offset(idleOffset, 0),
+                  child: Transform.rotate(
+                    angle: tilt,
+                    child: SizedBox(
+                      width: 180,
+                      height: 120,
+                      child: Lottie.asset(
+                        'assets/lottie/plane_loop.json',
+                        fit: BoxFit.contain,
+                        repeat: true,
+                        animate: true,
+                        errorBuilder: (context, error, stackTrace) {
+                          // Fallback to PNG if Lottie missing
+                          return Image.asset(
+                            'assets/images/plane.png',
+                            fit: BoxFit.contain,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            // Contrail effect
+            if (_showContrail)
+              Positioned(
+                bottom: 28,
+                right: 100,
+                child: AnimatedBuilder(
+                  animation: _contrailController,
+                  builder: (context, child) {
+                    return Opacity(
+                      opacity: (1.0 - _contrailController.value),
+                      child: Transform.translate(
+                        offset: Offset(-_contrailController.value * 120, 0),
+                        child: Container(
+                          width: 100,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.white.withOpacity(0.8),
+                                Colors.white.withOpacity(0.3),
+                                Colors.transparent,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                      ),
                     );
                   },
                 ),
               ),
-            ),
-          ),
+          ],
         ),
-      ),
-    );
-  }
-
-  /// Builds the contrail effect when plane is tapped
-  Widget _buildContrailEffect() {
-    return Positioned(
-      top: 140,
-      right: 80,
-      child: AnimatedBuilder(
-        animation: _contrailController,
-        builder: (context, child) {
-          return Opacity(
-            opacity: (1.0 - _contrailController.value),
-            child: Transform.translate(
-              offset: Offset(-_contrailController.value * 120, 0),
-              child: Container(
-                width: 100,
-                height: 3,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.white.withOpacity(0.9),
-                      Colors.white.withOpacity(0.5),
-                      Colors.white.withOpacity(0.2),
-                      Colors.transparent,
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-          );
-        },
       ),
     );
   }
