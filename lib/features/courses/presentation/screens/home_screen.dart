@@ -1,9 +1,13 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:lottie/lottie.dart';
 import '../../../../shared/widgets/aviation_app_bar.dart';
+import '../../../../shared/widgets/parallax_hero_header.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/models/course_model.dart';
@@ -23,187 +27,172 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   String selectedAirline = 'All Courses';
   String searchQuery = '';
+  final ScrollController _scrollController = ScrollController();
+  double _scrollOffset = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    setState(() {
+      _scrollOffset = _scrollController.offset;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F5F7),
-      appBar: const AviationAppBar(
-        title: 'My Cadet',
-        showBack: false,
-        // logoAsset: 'assets/icons/thy_logo.svg', // Uncomment if you have a logo asset
-      ),
-      body: Stack(
-        children: [
-          // Aviation radar SVG background (optional, can be replaced with your own SVG asset)
-          Positioned(
-            top: -40,
-            right: -40,
-            child: Opacity(
-              opacity: 0.08,
-              child: SvgPicture.network(
-                'https://www.svgrepo.com/show/331760/radar.svg',
-                width: 220,
-                height: 220,
+      body: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          // Dynamic Hero Header with Parallax Effect
+          SliverAppBar(
+            expandedHeight: 400,
+            floating: false,
+            pinned: true,
+            backgroundColor: AppTheme.thyRed,
+            flexibleSpace: FlexibleSpaceBar(
+              background: ParallaxHeroHeader(
+                title: 'Havacılık Kariyerinizi Başlatın',
+                subtitle: 'THY, Pegasus, SunExpress ve diğer havayollarının cadet programlarına hazırlanın.',
+                ctaText: 'Kursları Keşfedin',
+                scrollOffset: _scrollOffset,
+                onCTAPressed: () {
+                  // Navigate to courses or trigger course discovery
+                  context.go('/home');
+                },
+                gradientColors: [AppTheme.thyRed, AppTheme.thyDarkRed],
+                backgroundPatternUrl: 'https://www.svgrepo.com/show/331760/radar.svg',
+                airplaneAnimationUrl: 'https://assets2.lottiefiles.com/packages/lf20_2znxgjyt.json',
+                showFloatingClouds: true,
+              ),
+            ),
+            title: _buildAppBarTitle(),
+            elevation: 0,
+          ),
+          
+          // Content Section
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Airline Selector
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Havayolu Seçin',
+                            style: GoogleFonts.inter(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            children: AppConstants.airlineCategories.map((airline) {
+                              return FilterChip(
+                                label: Text(airline),
+                                selected: selectedAirline == airline,
+                                onSelected: (selected) {
+                                  setState(() {
+                                    selectedAirline = airline;
+                                  });
+                                },
+                                selectedColor: AppTheme.thyRed.withOpacity(0.2),
+                                checkmarkColor: AppTheme.thyRed,
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Search Bar
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Kurs ara...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        searchQuery = value;
+                      });
+                    },
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Featured Courses
+                  Text(
+                    'Öne Çıkan Kurslar',
+                    style: GoogleFonts.barlow(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0C2340),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Course Grid
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.85,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                    ),
+                    itemCount: _getFilteredCourses().length,
+                    itemBuilder: (context, index) {
+                      final course = _getFilteredCourses()[index];
+                      return _buildCourseCard(course);
+                    },
+                  ),
+                ],
               ),
             ),
           ),
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                // Hero Section
-                Container(
-                  width: double.infinity,
-                  height: 300,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        AppTheme.thyRed,
-                        AppTheme.thyDarkRed,
-                      ],
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Havacılık Kariyerinizi Başlatın',
-                          style: GoogleFonts.inter(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.white,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'THY, Pegasus, SunExpress ve diğer havayollarının cadet programlarına hazırlanın.',
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            color: AppTheme.white.withOpacity(0.9),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.white,
-                            foregroundColor: AppTheme.thyRed,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                          ),
-                          child: const Text(
-                            'Kursları Keşfedin',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Airline Selector
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Havayolu Seçin',
-                                style: GoogleFonts.inter(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Wrap(
-                                spacing: 8,
-                                children: AppConstants.airlineCategories.map((airline) {
-                                  return FilterChip(
-                                    label: Text(airline),
-                                    selected: selectedAirline == airline,
-                                    onSelected: (selected) {
-                                      setState(() {
-                                        selectedAirline = airline;
-                                      });
-                                    },
-                                    selectedColor: AppTheme.thyRed.withOpacity(0.2),
-                                    checkmarkColor: AppTheme.thyRed,
-                                  );
-                                }).toList(),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Search Bar
-                      TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Kurs ara...',
-                          prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            searchQuery = value;
-                          });
-                        },
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Featured Courses
-                      Text(
-                        'Öne Çıkan Kurslar',
-                        style: GoogleFonts.barlow(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0C2340),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      
-                      // Course Grid
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.85,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                        ),
-                        itemCount: _getFilteredCourses().length,
-                        itemBuilder: (context, index) {
-                          final course = _getFilteredCourses()[index];
-                          return _buildCourseCard(course);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
+      ),
+    );
+  }
+
+  /// Builds the app bar title that appears when scrolling
+  Widget _buildAppBarTitle() {
+    return AnimatedOpacity(
+      opacity: _scrollOffset > 200 ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 200),
+      child: Text(
+        'My Cadet',
+        style: GoogleFonts.inter(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: AppTheme.white,
+        ),
       ),
     );
   }
