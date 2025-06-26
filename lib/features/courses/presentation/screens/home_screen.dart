@@ -107,114 +107,105 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 // Main content
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 24),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Airline Selector with animation
-                      Card(
-                        color: Colors.transparent,
-                        elevation: 0,
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Havayolu Seçin',
-                                style: GoogleFonts.orbitron(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Wrap(
-                                spacing: 8,
-                                children: AppConstants.airlineCategories.map((airline) {
-                                  final isSelected = selectedAirline == airline;
-                                  return Animate(
-                                    effects: [
-                                      ScaleEffect(
-                                        begin: const Offset(1.0, 1.0),
-                                        end: isSelected ? const Offset(1.12, 1.12) : const Offset(1.0, 1.0),
-                                        duration: 200.ms,
-                                        curve: Curves.easeOutBack,
-                                      ),
-                                    ],
-                                    child: FilterChip(
-                                      label: Text(airline),
-                                      selected: isSelected,
-                                      onSelected: (selected) async {
-                                        setState(() {
-                                          selectedAirline = airline;
-                                        });
-                                        await _playBeep();
-                                      },
-                                      selectedColor: AppTheme.thyRed.withOpacity(0.2),
-                                      checkmarkColor: AppTheme.thyRed,
-                                      labelStyle: GoogleFonts.orbitron(
-                                        fontWeight: FontWeight.w600,
-                                        color: isSelected ? AppTheme.thyRed : Colors.white,
-                                      ),
-                                      backgroundColor: Colors.white.withOpacity(0.05),
-                                      side: BorderSide(
-                                        color: isSelected ? AppTheme.thyRed : Colors.white24,
-                                        width: 1.2,
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                              ),
-                            ],
-                          ),
+                      Text(
+                        'Havayolu Seçin',
+                        style: GoogleFonts.barlowCondensed(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
                         ),
                       ),
-                      
-                      const SizedBox(height: 24),
-                      
+                      const SizedBox(height: 10),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: AppConstants.airlineCategories.map((airline) {
+                            final isSelected = selectedAirline == airline;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 10),
+                              child: ChoiceChip(
+                                label: Text(
+                                  airline,
+                                  style: GoogleFonts.barlowCondensed(
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected ? Colors.white : const Color(0xFFB0C4DE),
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                selected: isSelected,
+                                onSelected: (selected) async {
+                                  setState(() {
+                                    selectedAirline = airline;
+                                  });
+                                  await _playBeep();
+                                },
+                                backgroundColor: const Color(0xFF16243A),
+                                selectedColor: AppTheme.thyRed,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  side: BorderSide(
+                                    color: isSelected ? AppTheme.thyRed : Colors.white24,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                elevation: isSelected ? 4 : 0,
+                                shadowColor: AppTheme.thyRed.withOpacity(0.2),
+                                labelPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 2),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      const SizedBox(height: 22),
                       // Search Bar
                       TextField(
                         decoration: InputDecoration(
                           hintText: 'Kurs ara...',
-                          prefixIcon: const Icon(Icons.search),
+                          hintStyle: GoogleFonts.inter(color: Colors.white54, fontSize: 15),
+                          prefixIcon: const Icon(Icons.search, color: Colors.white38),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
                           ),
                           filled: true,
-                          fillColor: Colors.white.withOpacity(0.06),
+                          fillColor: const Color(0xFF16243A),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
                         ),
-                        style: GoogleFonts.orbitron(color: Colors.white),
+                        style: GoogleFonts.inter(color: Colors.white, fontSize: 15),
                         onChanged: (value) {
                           setState(() {
                             searchQuery = value;
                           });
                         },
                       ),
-                      
-                      const SizedBox(height: 24),
-                      
+                      const SizedBox(height: 22),
                       // Course List Title
                       Text(
                         'Öne Çıkan Kurslar',
-                        style: GoogleFonts.orbitron(
-                          fontSize: 24,
+                        style: GoogleFonts.barlowCondensed(
+                          fontSize: 26,
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFFFFD147),
                           letterSpacing: 1.2,
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      
+                      const SizedBox(height: 14),
                       // Course Grid with aviation cards
                       GridView.builder(
+                        padding: const EdgeInsets.only(bottom: 16),
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 0.85,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
+                          childAspectRatio: 0.82,
+                          crossAxisSpacing: 18,
+                          mainAxisSpacing: 18,
                         ),
                         itemCount: _getFilteredCourses().length,
                         itemBuilder: (context, index) {
@@ -261,157 +252,156 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ],
       child: GestureDetector(
         onTap: () {
-          // Navigate to course detail screen
           context.go('/course/${course.id}');
         },
-        child: Stack(
-          children: [
-            // Glassmorphism background
-            ClipRRect(
-              borderRadius: BorderRadius.circular(18),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.10),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.08),
-                      width: 1.2,
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF16243A),
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.18),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Align(
+                  alignment: Alignment.topRight,
+                  child: SizedBox(
+                    width: 26,
+                    height: 26,
+                    child: Lottie.asset(
+                      'assets/lottie/radar_mini.json',
+                      fit: BoxFit.contain,
+                      repeat: true,
+                      animate: true,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(Icons.my_location, color: Colors.white24, size: 20);
+                      },
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.18),
-                        blurRadius: 18,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Mini radar or compass
-                        Align(
-                          alignment: Alignment.topRight,
-                          child: SizedBox(
-                            width: 28,
-                            height: 28,
-                            child: Lottie.asset(
-                              'assets/lottie/radar_mini.json',
-                              fit: BoxFit.contain,
-                              repeat: true,
-                              animate: true,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(Icons.my_location, color: Colors.white24, size: 22);
-                              },
+                ),
+                const SizedBox(height: 2),
+                Center(
+                  child: Builder(
+                    builder: (context) {
+                      if (course.imageUrl != null && course.imageUrl!.endsWith('.svg')) {
+                        return SvgPicture.network(
+                          course.imageUrl!,
+                          height: 32,
+                          placeholderBuilder: (context) => const Icon(Icons.flight, color: Colors.white24, size: 26),
+                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.flight, color: Colors.white24, size: 26),
+                        );
+                      } else if (course.imageUrl != null) {
+                        return Image.network(
+                          course.imageUrl!,
+                          height: 32,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.flight, color: Colors.white24, size: 26),
+                        );
+                      } else {
+                        return Lottie.asset(
+                          'assets/lottie/plane_loop.json',
+                          width: 32,
+                          height: 32,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.flight, color: Colors.white24, size: 26),
+                        );
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  course.title,
+                  style: GoogleFonts.barlowCondensed(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  course.airline,
+                  style: GoogleFonts.barlowCondensed(
+                    fontSize: 12,
+                    color: const Color(0xFF00FF9D),
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const Spacer(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD147),
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFFD147).withOpacity(0.18),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            '₺',
+                            style: GoogleFonts.orbitron(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF051C35),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        // Airline logo or animated plane
-                        Center(
-                          child: course.imageUrl != null && course.imageUrl!.endsWith('.svg')
-                              ? SvgPicture.network(
-                                  course.imageUrl!,
-                                  height: 32,
-                                  placeholderBuilder: (context) => const CircularProgressIndicator(strokeWidth: 1),
-                                )
-                              : (course.imageUrl != null
-                                  ? Image.network(
-                                      course.imageUrl!,
-                                      height: 32,
-                                      fit: BoxFit.contain,
-                                    )
-                                  : Lottie.asset(
-                                      'assets/lottie/plane_loop.json',
-                                      width: 32,
-                                      height: 32,
-                                      fit: BoxFit.contain,
-                                    )),
-                        ),
-                        const SizedBox(height: 8),
-                        // Title
-                        Text(
-                          course.title,
-                          style: GoogleFonts.orbitron(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                          const SizedBox(width: 2),
+                          Text(
+                            course.price.toStringAsFixed(0),
+                            style: GoogleFonts.orbitron(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF051C35),
+                              letterSpacing: 1.2,
+                            ),
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                        ],
+                      ),
+                    ),
+                    if (index == 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00FF9D).withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        // Airline
-                        Text(
-                          course.airline,
-                          style: GoogleFonts.orbitron(
+                        child: Text(
+                          'Instructor Online',
+                          style: GoogleFonts.inter(
                             fontSize: 11,
                             color: const Color(0xFF00FF9D),
+                            fontWeight: FontWeight.w600,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 8),
-                        // Price as aviation tag
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFD147).withOpacity(0.85),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: const Color(0xFFFFD147),
-                                  width: 1.2,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFFFFD147).withOpacity(0.18),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                '₺${course.price.toStringAsFixed(0)}',
-                                style: GoogleFonts.orbitron(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF051C35),
-                                  letterSpacing: 1.1,
-                                ),
-                              ),
-                            ),
-                            // (Optional) Instructor Online tag
-                            if (index == 0)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF00FF9D).withOpacity(0.18),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  'Instructor Online',
-                                  style: GoogleFonts.orbitron(
-                                    fontSize: 10,
-                                    color: const Color(0xFF00FF9D),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        // (Optional) Route line or animation can be added here
-                      ],
-                    ),
-                  ),
+                      ),
+                  ],
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

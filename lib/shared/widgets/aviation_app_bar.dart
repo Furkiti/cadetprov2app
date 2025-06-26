@@ -26,15 +26,8 @@ class AviationAppBar extends StatelessWidget implements PreferredSizeWidget {
         bottomRight: Radius.circular(28),
       ),
       child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: gradientColors ?? [
-              const Color(0xFFE30613), // THY Red
-              const Color(0xFF0C2340), // Navy Blue
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+        decoration: const BoxDecoration(
+          color: Color(0xFF0C1B2A),
         ),
         child: AppBar(
           backgroundColor: Colors.transparent,
@@ -63,7 +56,7 @@ class AviationAppBar extends StatelessWidget implements PreferredSizeWidget {
                   : null),
           title: Text(
             title,
-            style: GoogleFonts.barlow(
+            style: GoogleFonts.barlowCondensed(
               fontSize: 22,
               fontWeight: FontWeight.bold,
               color: Colors.white,
